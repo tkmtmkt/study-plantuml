@@ -1,0 +1,108 @@
+@startuml
+skinparam {
+  defaultFontName Noto Sans CJK JP Black
+  monochrome true
+  ParticipantPadding 20
+  BoxPadding 10
+  sequenceMessageAlign direction
+}
+hide footbox
+autoactivate on
+
+title 通信(SS1 -> SS2)
+
+box "SS1" #FFFFFF
+  participant APP as APP.SS1
+  participant FTP as FTP.SS1 <<vsftpd>>
+  participant COM as COM.SS1 <<tomcat>>
+end box
+box "SS2(X1)" #FFFFFF
+  participant COM as COM.SS2_X1 <<tomcat>>
+  participant FTP as FTP.SS2_X1 <<vsftpd>>
+  participant APP as APP.SS2_X1
+end box
+box "SS2(X2)" #FFFFFF
+  participant COM as COM.SS2_X2 <<tomcat>>
+  participant FTP as FTP.SS2_X2 <<vsftpd>>
+  participant APP as APP.SS2_X2
+end box
+box "SS2(Y1)" #FFFFFF
+  participant COM as COM.SS2_Y1 <<tomcat>>
+  participant FTP as FTP.SS2_Y1 <<vsftpd>>
+  participant APP as APP.SS2_Y1
+end box
+
+APP.SS1 -> COM.SS1 : GET
+  COM.SS1 -> COM.SS2_X1 : GET
+  return OK
+return OK
+note right
+  CATALINA_BASE/logs/localhost_access_log.YYYY-MM-DD.txt
+  ipaddress - - [DD/MMM/YYYY:hh:mm:ss Z] "GET q/RR.SS2.X1.SD001 HTTP/1.1" 200 size
+end note
+APP.SS1 -> COM.SS1 : GET
+  COM.SS1 -> COM.SS2_X2 : GET
+  return OK
+return OK
+note right
+  CATALINA_BASE/logs/localhost_access_log.YYYY-MM-DD.txt
+  ipaddress - - [DD/MMM/YYYY:hh:mm:ss Z] "GET q/RR.SS2.X2.SD001 HTTP/1.1" 200 size
+end note
+APP.SS1 -> COM.SS1 : GET
+  COM.SS1 -> COM.SS2_Y1 : GET
+  return OK
+return OK
+note right
+  CATALINA_BASE/logs/localhost_access_log.YYYY-MM-DD.txt
+  ipaddress - - [DD/MMM/YYYY:hh:mm:ss Z] "GET q/RR.SS2.Y1.SD001 HTTP/1.1" 200 size
+end note
+
+APP.SS1 -> COM.SS1 : POST
+  FTP.SS1 <- COM.SS1 : PUT
+  return OK
+  note left
+    /var/log/xferlog
+    DDD MMM dd hh:mm:ss hostname 9999 filename b - o r username ftp 0 * c
+  end note
+  COM.SS1 -> COM.SS2_X1 : POST
+    FTP.SS1 <- COM.SS2_X1 : GET
+    return OK
+    note left
+      /var/log/xferlog
+      DDD MMM dd hh:mm:ss hostname 9999 filename b - o r username ftp 0 * c
+    end note
+    COM.SS2_X1 -> FTP.SS2_X1 : PUT
+    return OK
+  return OK
+return OK
+APP.SS2_X1 -> APP.SS2_X1
+  COM.SS2_X1 <- APP.SS2_X1 : GET
+  return OK
+  FTP.SS2_X1 <- APP.SS2_X1 : GET
+  return OK
+return
+
+APP.SS1 -> COM.SS1 : POST
+  FTP.SS1 <- COM.SS1 : PUT
+  return OK
+  COM.SS1 -> COM.SS2_X2 : POST
+    FTP.SS1 <- COM.SS2_X2 : GET
+    return OK
+    COM.SS2_X2 -> FTP.SS2_X2 : PUT
+    return OK
+  return OK
+return OK
+
+APP.SS1 -> COM.SS1 : POST
+  FTP.SS1 <- COM.SS1 : PUT
+  return OK
+  COM.SS1 -> COM.SS2_Y1 : POST
+    FTP.SS1 <- COM.SS2_Y1 : GET
+    return OK
+    COM.SS2_Y1 -> FTP.SS2_Y1 : PUT
+    return OK
+  return OK
+return OK
+
+@enduml
+' vim: set ts=2 sw=2 et:
