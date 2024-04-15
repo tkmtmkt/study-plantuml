@@ -1,4 +1,4 @@
-study-plantuml
+trial-plantuml
 ==============
 
 準備
